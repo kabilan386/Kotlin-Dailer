@@ -96,4 +96,8 @@ dependencies {
     implementation(libs.indicator.fast.scroll)
     implementation(libs.autofit.text.view)
     implementation(libs.kotlinx.serialization.json)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+
 }

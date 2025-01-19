@@ -21,7 +21,7 @@ class ManageVisibleTabsDialog(val activity: BaseSimpleActivity) {
         tabs.apply {
             put(TAB_CONTACTS, R.id.manage_visible_tabs_contacts)
             put(TAB_FAVORITES, R.id.manage_visible_tabs_favorites)
-            put(TAB_CALL_HISTORY, R.id.manage_visible_tabs_call_history)
+            put(TAB_CALL_HISTORY, R.id. manage_visible_tabs_call_history)
         }
 
         val showTabs = activity.config.showTabs

@@ -1,9 +1,11 @@
 package com.simplemobiletools.dialer.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RippleDrawable
@@ -14,17 +16,24 @@ import android.os.Looper
 import android.os.PowerManager
 import android.telecom.Call
 import android.telecom.CallAudioState
+import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.children
+import com.google.gson.Gson
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.*
 import com.simplemobiletools.commons.models.SimpleListItem
+import com.simplemobiletools.dialer.ApiService
 import com.simplemobiletools.dialer.R
 import com.simplemobiletools.dialer.databinding.ActivityCallBinding
 import com.simplemobiletools.dialer.dialogs.DynamicBottomSheetChooserDialog
@@ -32,8 +41,15 @@ import com.simplemobiletools.dialer.extensions.*
 import com.simplemobiletools.dialer.helpers.*
 import com.simplemobiletools.dialer.models.AudioRoute
 import com.simplemobiletools.dialer.models.CallContact
+import com.simplemobiletools.dialer.models.CallStatusRequest
+import com.simplemobiletools.dialer.models.CallStatusResponse
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.math.max
 import kotlin.math.min
+
 
 class CallActivity : SimpleActivity() {
     companion object {
@@ -64,6 +80,7 @@ class CallActivity : SimpleActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("CallActivityLog", "when incoming the call") // Log when the call is accepted
         setContentView(binding.root)
 
         if (CallManager.getPhoneState() == NoCall) {
@@ -76,7 +93,76 @@ class CallActivity : SimpleActivity() {
         audioManager.mode = AudioManager.MODE_IN_CALL
         addLockScreenFlags()
         CallManager.addListener(callCallback)
+        Log.d("CallActivityLog", CallManager.getCallerInfo().toString()) // Log when the call is accepted
+
+        val number = getPhoneNumber()
+        Log.d("CallActivityLog", number)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://next.fenizotechnologies.com") // Your base URL
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        // Create an instance of the API service
+        val apiService = retrofit.create(ApiService::class.java)
+
+
+
+        val callStatusRequest = CallStatusRequest(
+            agent_number = "7904005315",
+            contact = CallManager.getCallerInfo().toString(),
+            method = "Incoming"
+        )
+        Log.d("CallActivityLog", "Request Body: ${Gson().toJson(callStatusRequest)}")
+
+        // Make the API call
+        apiService.updateCallStatus(callStatusRequest).enqueue(object : Callback<CallStatusResponse> {
+            override fun onResponse(call: retrofit2.Call<CallStatusResponse>, response: Response<CallStatusResponse>) {
+                if (response.isSuccessful) {
+                    // Handle successful response
+                    Log.d("CallActivityLog", response.body().toString()) // Log when the call is accepted
+                } else {
+                    // Handle error response
+                    Log.d("CallActivityLog", "Failed") // Log when the call is accepted
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<CallStatusResponse>, t: Throwable) {
+                // Handle failure
+                Toast.makeText(this@CallActivity, "Failure: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
         updateCallContactInfo(CallManager.getPrimaryCall())
+    }
+    private fun getPhoneNumber():String {
+        try {
+            val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+            val subscriptionManager = getSystemService(TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                val activeSubscriptionInfoList = subscriptionManager.activeSubscriptionInfoList ;
+
+                if(activeSubscriptionInfoList.isNullOrEmpty()){
+                    var phoneNumber = "";
+                    activeSubscriptionInfoList?.forEach { subscriptionInfo ->
+                     val phoneNumberString = subscriptionInfo.number
+                        if (!phoneNumberString.isNullOrEmpty()) {
+                            Log.d("CallActivityLog", "Phone number: $phoneNumberString")
+                            phoneNumber = phoneNumberString;
+                        } else {
+                            return "";
+                            Log.d("CallActivityLog", "Phone number is unavailable")
+                        }
+                     }
+                }else{
+                    val phoneNumber = telephonyManager.line1Number;
+                    return phoneNumber;
+                }
+            }
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+            Log.d("CallActivityLog", e.toString()) // Log when the call is accepted
+            return "";
+        }
+        return "";
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -176,6 +262,7 @@ class CallActivity : SimpleActivity() {
         }
 
         callEnd.setOnClickListener {
+
             endCall()
         }
 
@@ -717,6 +804,42 @@ class CallActivity : SimpleActivity() {
     }
 
     private fun endCall() {
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://next.fenizotechnologies.com") // Your base URL
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        // Create an instance of the API service
+        val apiService = retrofit.create(ApiService::class.java)
+
+
+
+        val callStatusRequest = CallStatusRequest(
+            agent_number = "7904005315",
+            contact = CallManager.getCallerInfo().toString(),
+            method = "Incoming"
+        )
+        Log.d("CallActivityLog", "Request Body: ${Gson().toJson(callStatusRequest)}")
+
+        // Make the API call
+        apiService.updateCallEndStatus(callStatusRequest).enqueue(object : Callback<CallStatusResponse> {
+            override fun onResponse(call: retrofit2.Call<CallStatusResponse>, response: Response<CallStatusResponse>) {
+                if (response.isSuccessful) {
+                    // Handle successful response
+                    Log.d("CallActivityLog", response.body().toString()) // Log when the call is accepted
+                } else {
+                    // Handle error response
+                    Log.d("CallActivityLog", "Failed") // Log when the call is accepted
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<CallStatusResponse>, t: Throwable) {
+                // Handle failure
+                Toast.makeText(this@CallActivity, "Failure: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+
         CallManager.reject()
         disableProximitySensor()
         audioRouteChooserDialog?.dismissAllowingStateLoss()

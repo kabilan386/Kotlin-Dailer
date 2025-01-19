@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dialpad_coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -43,11 +44,14 @@
             android:id="@+id/dialpad_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginStart="16dp"
             android:clipToPadding="false"
             android:scrollbars="none"
             app:layoutManager="com.simplemobiletools.commons.views.MyLinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/dialpad_input"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
 
         <com.reddit.indicatorfastscroll.FastScrollerView
             android:id="@+id/letter_fastscroller"
@@ -72,8 +76,10 @@
             android:id="@+id/dialpad_divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginBottom="140dp"
             android:background="@drawable/divider"
-            app:layout_constraintBottom_toTopOf="@+id/dialpad_input" />
+            app:layout_constraintBottom_toTopOf="@+id/dialpad_input"
+            tools:layout_editor_absoluteX="-16dp" />
 
         <com.simplemobiletools.commons.views.MyEditText
             android:id="@+id/dialpad_input"
@@ -87,6 +93,7 @@
             android:textSize="@dimen/dialpad_text_size"
             app:layout_constraintBottom_toTopOf="@+id/dialpad_wrapper"
             app:layout_constraintEnd_toStartOf="@+id/dialpad_clear_char"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent" />
 
         <ImageView

@@ -6,6 +6,7 @@ import android.telecom.Call
 import android.telecom.CallAudioState
 import android.telecom.InCallService
 import android.telecom.VideoProfile
+import android.util.Log
 import com.simplemobiletools.dialer.extensions.getStateCompat
 import com.simplemobiletools.dialer.extensions.hasCapability
 import com.simplemobiletools.dialer.extensions.isConference
@@ -206,6 +207,22 @@ class CallManager {
                     call?.stopDtmfTone()
                 }, DIALPAD_TONE_LENGTH_MS)
         }
+
+        fun getCallerInfo(): String? {
+            // Retrieve the primary call (the current active call)
+            val primaryCall = getPrimaryCall()
+            if (primaryCall != null) {
+
+                // Get the call details
+                val callDetails = primaryCall.details
+                Log.d("CallActivityLog", primaryCall.details.toString())
+                // Retrieve the caller's phone number
+                val callerNumber = callDetails?.handle?.schemeSpecificPart
+                return callerNumber
+            }
+            return null
+        }
+
     }
 }
 
